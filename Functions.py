@@ -113,6 +113,7 @@ def road_range_lon_lat(df):
             new_row = {'road': row['road'],
                        'min_lat': row['lat'], 'max_lat': row['lat'],
                        'min_lon': row['lon'], 'max_lon': row['lon']}
+            print(df_road_range)
             df_road_range = df_road_range.append(new_row, ignore_index=True)
     return df_road_range
 
