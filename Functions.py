@@ -66,4 +66,33 @@ def lon_lat_errors_tsv(df):
     print(index_changes)
     return df
 
+def restructure_tsv(tsv_file):
+    #importing the tsv file with appropriate delimiter, suppress low memory warning
+    df_rds = pd.read_csv("tsv_file", delimiter='\t', low_memory = False)
+
+    #construct empty list for the data
+    restructured_data = []
+
+    #iterate over the rows and each index
+    for index, row in df_rds.iterrows():
+        road_name = row['road']
+        #iterate over columns in groups of 3
+        for i in range(1, len(df_rds.columns), 3):
+            try:
+                #identify lsrp, lat and lon
+                lsrp = row[i]
+                lat = row[i + 1]
+                lon = row[i + 2]
+                #add the data to the list
+                if pd.notnull(lsrp):
+                    restructured_data.append([road_name, lsrp, lat, lon])
+            except IndexError:
+                #break if the end of the row is reached
+                break
+
+    #construct the dataframe
+    df_restructured = pd.DataFrame(restructured_data, columns=['road', 'lsrp', 'lat', 'lon'])
+
+    return df_restructured
+
 
