@@ -66,7 +66,7 @@ def lon_lat_errors_tsv(df):
     print(index_changes)
     return df
 
-def restructure_tsv(df):
+def restructure_df(df):
     #importing the tsv file with appropriate delimiter, suppress low memory warning
     #df_rds = pd.read_csv("tsv_file", delimiter='\t', low_memory = False)
 
@@ -95,4 +95,24 @@ def restructure_tsv(df):
 
     return df_restructured
 
+def road_range_lon_lat(df):
+    df_road_range = pd.DataFrame(columns = ['road', 'min_lat', 'max_lat', 'min_lon', 'max_lon'])
+    for index, row in df.iterrows():
+        # Check if the road is already in df_road_range
+        if row['road'] in df_road_range['road'].values:
+            # Find the index of the existing road entry in df_road_range
+            road_index = df_road_range[df_road_range['road'] == row['road']].index[0]
+
+            # Update min and max latitude and longitude if necessary
+            df_road_range.at[road_index, 'min_lat'] = min(df_road_range.at[road_index, 'min_lat'], row['lat'])
+            df_road_range.at[road_index, 'max_lat'] = max(df_road_range.at[road_index, 'max_lat'], row['lat'])
+            df_road_range.at[road_index, 'min_lon'] = min(df_road_range.at[road_index, 'min_lon'], row['lon'])
+            df_road_range.at[road_index, 'max_lon'] = max(df_road_range.at[road_index, 'max_lon'], row['lon'])
+        else:
+            # If not, append a new row with the current values
+            new_row = {'road': row['road'],
+                       'min_lat': row['lat'], 'max_lat': row['lat'],
+                       'min_lon': row['lon'], 'max_lon': row['lon']}
+            df_road_range = df_road_range.append(new_row, ignore_index=True)
+    return df_road_range
 
