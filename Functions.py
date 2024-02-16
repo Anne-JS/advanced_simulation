@@ -96,24 +96,26 @@ def restructure_df(df):
     return df_restructured
 
 def road_range_lon_lat(df):
-    df_road_range = pd.DataFrame(columns = ['road', 'min_lat', 'max_lat', 'min_lon', 'max_lon'])
-    for index, row in df.iterrows():
-        # Check if the road is already in df_road_range
-        if row['road'] in df_road_range['road'].values:
-            # Find the index of the existing road entry in df_road_range
-            road_index = df_road_range[df_road_range['road'] == row['road']].index[0]
+    road_ranges = {}  # Use a dictionary to track road ranges
 
-            # Update min and max latitude and longitude if necessary
-            df_road_range.at[road_index, 'min_lat'] = min(df_road_range.at[road_index, 'min_lat'], row['lat'])
-            df_road_range.at[road_index, 'max_lat'] = max(df_road_range.at[road_index, 'max_lat'], row['lat'])
-            df_road_range.at[road_index, 'min_lon'] = min(df_road_range.at[road_index, 'min_lon'], row['lon'])
-            df_road_range.at[road_index, 'max_lon'] = max(df_road_range.at[road_index, 'max_lon'], row['lon'])
+    for index, row in df.iterrows():
+        road = row['road']
+        lat = row['lat']
+        lon = row['lon']
+
+        if road not in road_ranges:
+            # Initialize the road entry with current row's lat and lon as both min and max
+            road_ranges[road] = {'road': road, 'min_lat': lat, 'max_lat': lat, 'min_lon': lon, 'max_lon': lon}
         else:
-            # If not, append a new row with the current values
-            new_row = {'road': row['road'],
-                       'min_lat': row['lat'], 'max_lat': row['lat'],
-                       'min_lon': row['lon'], 'max_lon': row['lon']}
-            print(df_road_range)
-            df_road_range = df_road_range.append(new_row, ignore_index=True)
+            # Update min and max latitudes and longitudes if necessary
+            road_ranges[road]['min_lat'] = min(road_ranges[road]['min_lat'], lat)
+            road_ranges[road]['max_lat'] = max(road_ranges[road]['max_lat'], lat)
+            road_ranges[road]['min_lon'] = min(road_ranges[road]['min_lon'], lon)
+            road_ranges[road]['max_lon'] = max(road_ranges[road]['max_lon'], lon)
+
+    # Convert the road_ranges dictionary to a DataFrame
+    rows_list = list(road_ranges.values())
+    df_road_range = pd.DataFrame(rows_list)
+
     return df_road_range
 
