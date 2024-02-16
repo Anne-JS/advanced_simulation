@@ -66,7 +66,10 @@ def lon_lat_errors_tsv(df):
     print(index_changes)
     return df
 
-def restructure_df(df):
+def restructure_tsv(df):
+    #importing the tsv file with appropriate delimiter, suppress low memory warning
+    #df_rds = pd.read_csv("tsv_file", delimiter='\t', low_memory = False)
+
     #construct empty list for the data
     restructured_data = []
 
