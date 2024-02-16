@@ -1,6 +1,8 @@
 import pandas as pd
 
 def clean_lon_lat_bmms(df):
+    df = df.sort_values(by=['road', 'km'])
+
     for index, row in df.iterrows():
         if row.lat > 27 or row.lon < 88:
             lat = row.lat
@@ -20,6 +22,22 @@ def clean_lon_lat_bmms(df):
                     print(
                         f"on road {row['road']} with the name {index} {row['name']} the old longitude was {row['lon']} while previous was {prev_row['lon']}")
                     df.loc[index, 'lon'] = prev_row['lon']
+            else:
+                next_three_lat = 0
+                next_three_lon = 0
+                count = 0
+                for i in range(1,6):
+                    if df.loc[index+i, 'road'] == row.road:
+                        next_three_lat += df.loc[index+i, 'lat']
+                        next_three_lon += df.loc[index+i, 'lon']
+                        count += 1
+                avg_lat = next_three_lat/count
+                avg_lon = next_three_lon/count
+                if row['lat'] < avg_lat - 1 or row['lat'] > avg_lat + 1:
+                    df.loc[index, 'lat'] == avg_lat
+                if row['lon'] < avg_lon - 1 or row['lon'] > avg_lon + 1:
+                    df.loc[index, 'lon'] == avg_lon
+
         prev_row = df.loc[index]
     return df
 
