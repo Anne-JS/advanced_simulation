@@ -1,8 +1,7 @@
 import pandas as pd
 
-def clean_lon_lat_bmms(df):
+def clean_lon_lat_bmms(df, road_ranges):
     df = df.sort_values(by=['road', 'km'])
-
     for index, row in df.iterrows():
         if row.lat > 27 or row.lon < 88:
             lat = row.lat
@@ -23,21 +22,30 @@ def clean_lon_lat_bmms(df):
                         f"on road {row['road']} with the name {index} {row['name']} the old longitude was {row['lon']} while previous was {prev_row['lon']}")
                     df.loc[index, 'lon'] = prev_row['lon']
             else:
-                next_three_lat = 0
-                next_three_lon = 0
-                count = 0
-                for i in range(1,6):
-                    if df.loc[index+i, 'road'] == row.road:
-                        next_three_lat += df.loc[index+i, 'lat']
-                        next_three_lon += df.loc[index+i, 'lon']
-                        count += 1
-                avg_lat = next_three_lat/count
-                avg_lon = next_three_lon/count
-                if row['lat'] < avg_lat - 1 or row['lat'] > avg_lat + 1:
-                    df.loc[index, 'lat'] == avg_lat
-                if row['lon'] < avg_lon - 1 or row['lon'] > avg_lon + 1:
-                    df.loc[index, 'lon'] == avg_lon
-
+                if not road_ranges[road_ranges['road'] == row['road']]['min_lat'].empty:
+                    if row['lat'] < road_ranges[road_ranges['road'] == row['road']]['min_lat'].iloc[0] or row['lat'] > road_ranges[road_ranges['road'] == row['road']]['max_lat'].iloc[0]:
+                        next_three_lat = 0
+                        count = 0
+                        for i in range(1,6):
+                            if df.loc[index+i, 'road'] == row.road:
+                                next_three_lat += df.loc[index+i, 'lat']
+                                count += 1
+                        if count != 0:
+                            avg_lat = next_three_lat/count
+                            if row['lat'] < avg_lat - 1 or row['lat'] > avg_lat + 1:
+                                df.loc[index, 'lat'] = avg_lat
+                if not road_ranges[road_ranges['road'] == row['road']]['min_lon'].empty:
+                    if row['lon'] < road_ranges[road_ranges['road'] == row['road']]['min_lon'].iloc[0] or row['lon'] > road_ranges[road_ranges['road'] == row['road']]['max_lon'].iloc[0]:
+                        next_three_lon = 0
+                        count = 0
+                        for i in range(1, 6):
+                            if df.loc[index + i, 'road'] == row.road:
+                                next_three_lon += df.loc[index + i, 'lon']
+                                count += 1
+                        if count != 0:
+                            avg_lon = next_three_lon / count
+                            if row['lon'] < avg_lon - 1 or row['lon'] > avg_lon + 1:
+                                df.loc[index, 'lon'] = avg_lon
         prev_row = df.loc[index]
     return df
 
@@ -136,5 +144,15 @@ def road_range_lon_lat(df):
     df_road_range = pd.DataFrame(rows_list)
 
     return df_road_range
+
+def clean(bmms_file_excel, roads_tsv_file):
+    bmms = pd.read_excel(bmms_file_excel)
+    df_rds = pd.read_csv(roads_tsv_file, delimiter='\t', low_memory=False)
+    df_rds = lon_lat_errors_tsv(df_rds)
+    df_rds = restructure_df(df_rds)
+    df_road_ranges = road_range_lon_lat(df_rds)
+    bmms = clean_lon_lat_bmms(bmms, df_road_ranges)
+    return bmms, df_rds, df_road_ranges
+
 
 
