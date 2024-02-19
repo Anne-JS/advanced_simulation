@@ -2,6 +2,14 @@ import pandas as pd
 
 def clean_lon_lat_bmms(df, road_ranges):
     df = df.sort_values(by=['road', 'km'])
+    # Identify rows with NaN or 0 in either 'lat' or 'lon'
+    rows_with_invalid_values = df[(df['lat'].isna() | df['lat'] == 0) | (df['lon'].isna() | df['lon'] == 0)]
+
+    # Store these rows in a separate DataFrame if you want to use them later
+    deleted_rows = rows_with_invalid_values.copy()
+
+    # Drop the rows from the original DataFrame
+    df = df.loc[~((df['lat'].isna() | df['lat'] == 0) | (df['lon'].isna() | df['lon'] == 0))].reset_index(drop=True)
     for index, row in df.iterrows():
         if row.lat > 27 or row.lon < 88:
             lat = row.lat
@@ -24,23 +32,15 @@ def clean_lon_lat_bmms(df, road_ranges):
             else:
                 if not road_ranges[road_ranges['road'] == row['road']]['min_lat'].empty:
                     if row['lat'] < road_ranges[road_ranges['road'] == row['road']]['min_lat'].iloc[0] or row['lat'] > road_ranges[road_ranges['road'] == row['road']]['max_lat'].iloc[0]:
-                        if row['road'] == 'Z1619':
-                            print(row['road'], row['lat'], 'step 1')
                         next_three_lat = 0
                         count = 0
                         for i in range(1,6):
                             if df.loc[index+i, 'road'] == row.road:
-                                if row['road'] == 'Z1619':
-                                    print(row['road'], row['lat'], 'step 2')
                                 next_three_lat += df.loc[index+i, 'lat']
                                 count += 1
                         if count != 0:
-                            if row['road'] == 'Z1619':
-                                print(row['road'], row['lat'], 'step 3')
                             avg_lat = next_three_lat/count
                             if row['lat'] < avg_lat - 0.3 or row['lat'] > avg_lat + 0.3:
-                                if row['road'] == 'Z1619':
-                                    print(row['road'], row['lat'], 'step 4')
                                 df.loc[index, 'lat'] = avg_lat
                 if not road_ranges[road_ranges['road'] == row['road']]['min_lon'].empty:
                     if row['lon'] < road_ranges[road_ranges['road'] == row['road']]['min_lon'].iloc[0] or row['lon'] > road_ranges[road_ranges['road'] == row['road']]['max_lon'].iloc[0]:
