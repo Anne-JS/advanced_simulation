@@ -149,10 +149,10 @@ def clean(bmms_file_excel, roads_tsv_file):
     bmms = pd.read_excel(bmms_file_excel)
     df_rds = pd.read_csv(roads_tsv_file, delimiter='\t', low_memory=False)
     df_rds = lon_lat_errors_tsv(df_rds)
-    df_rds = restructure_df(df_rds)
-    df_road_ranges = road_range_lon_lat(df_rds)
+    df_rds_restructured = restructure_df(df_rds)
+    df_road_ranges = road_range_lon_lat(df_rds_restructured)
     bmms = clean_lon_lat_bmms(bmms, df_road_ranges)
-    return bmms, df_rds, df_road_ranges
+    return bmms, df_rds, df_road_ranges, df_rds_restructured
 
 
 
