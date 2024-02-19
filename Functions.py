@@ -10,6 +10,9 @@ def clean_lon_lat_bmms(df, road_ranges):
 
     # Drop the rows from the original DataFrame
     df = df.loc[~((df['lat'].isna() | df['lat'] == 0) | (df['lon'].isna() | df['lon'] == 0))].reset_index(drop=True)
+
+    df.loc[df['width'] > 45, df.select_dtypes(include=['number']).columns] = df.loc[df['width'] > 45, df.select_dtypes(include=['number']).columns] / 100
+
     for index, row in df.iterrows():
         if row.lat > 27 or row.lon < 88:
             lat = row.lat
@@ -101,9 +104,6 @@ def lon_lat_errors_tsv(df):
     return df
 
 def restructure_df(df):
-    #importing the tsv file with appropriate delimiter, suppress low memory warning
-    #df_rds = pd.read_csv("tsv_file", delimiter='\t', low_memory = False)
-
     #construct empty list for the data
     restructured_data = []
 
@@ -162,5 +162,16 @@ def clean(bmms_file_excel, roads_tsv_file):
     bmms = clean_lon_lat_bmms(bmms, df_road_ranges)
     return bmms, df_rds, df_road_ranges, df_rds_restructured
 
+def first_restructure(bmms_file_excel, roads_tsv_file):
+    bmms = pd.read_excel(bmms_file_excel)
+    df_rds = pd.read_csv(roads_tsv_file, delimiter='\t', low_memory=False)
+    df_rds = lon_lat_errors_tsv(df_rds)
+    df_rds_restructured = restructure_df(df_rds)
+    return bmms, df_rds, df_rds_restructured
 
-
+def second_restructure(bmms_file_excel, roads_tsv_file):
+    bmms = pd.read_excel(bmms_file_excel)
+    df_rds = pd.read_csv(roads_tsv_file, delimiter='\t', low_memory=False)
+    df_rds = lon_lat_errors_tsv(df_rds)
+    df_rds_restructured = restructure_df(df_rds)
+    return bmms, df_rds, df_road_ranges, df_rds_restructured
