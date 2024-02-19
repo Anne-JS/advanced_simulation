@@ -8,31 +8,39 @@ def clean_lon_lat_bmms(df, road_ranges):
             lon = row.lon
             df.loc[index, 'lat'] = lon
             df.loc[index, 'lon'] = lat
-            print(f'road {row.road} at index {index} changed from lat {lat} to lat {lon}')
+            #print(f'road {row.road} at index {index} changed from lat {lat} to lat {lon}')
     prev_row = None
     for index, row in df.iterrows():
         if prev_row is not None:
             if row['road'] == prev_row['road']:
-                if row['lat'] < prev_row['lat'] - 0.5 or row['lat'] > prev_row['lat'] + 0.5:
-                    print(
-                        f"on road {row['road']} with the index,name {index} {row['name']} the old latitude was {row['lat']} while previous was {prev_row['lat']}")
+                if row['lat'] < prev_row['lat'] - 0.3 or row['lat'] > prev_row['lat'] + 0.3:
+                    # print(
+                    #     f"on road {row['road']} with the index,name {index} {row['name']} the old latitude was {row['lat']} while previous was {prev_row['lat']}")
                     df.loc[index, 'lat'] = prev_row['lat']
-                if row['lon'] < prev_row['lon'] - 0.5 or row['lon'] > prev_row['lon'] + 0.5:
-                    print(
-                        f"on road {row['road']} with the name {index} {row['name']} the old longitude was {row['lon']} while previous was {prev_row['lon']}")
+                if row['lon'] < prev_row['lon'] - 0.3 or row['lon'] > prev_row['lon'] + 0.3:
+                    # print(
+                    #     f"on road {row['road']} with the name {index} {row['name']} the old longitude was {row['lon']} while previous was {prev_row['lon']}")
                     df.loc[index, 'lon'] = prev_row['lon']
             else:
                 if not road_ranges[road_ranges['road'] == row['road']]['min_lat'].empty:
                     if row['lat'] < road_ranges[road_ranges['road'] == row['road']]['min_lat'].iloc[0] or row['lat'] > road_ranges[road_ranges['road'] == row['road']]['max_lat'].iloc[0]:
+                        if row['road'] == 'Z1619':
+                            print(row['road'], row['lat'], 'step 1')
                         next_three_lat = 0
                         count = 0
                         for i in range(1,6):
                             if df.loc[index+i, 'road'] == row.road:
+                                if row['road'] == 'Z1619':
+                                    print(row['road'], row['lat'], 'step 2')
                                 next_three_lat += df.loc[index+i, 'lat']
                                 count += 1
                         if count != 0:
+                            if row['road'] == 'Z1619':
+                                print(row['road'], row['lat'], 'step 3')
                             avg_lat = next_three_lat/count
-                            if row['lat'] < avg_lat - 1 or row['lat'] > avg_lat + 1:
+                            if row['lat'] < avg_lat - 0.3 or row['lat'] > avg_lat + 0.3:
+                                if row['road'] == 'Z1619':
+                                    print(row['road'], row['lat'], 'step 4')
                                 df.loc[index, 'lat'] = avg_lat
                 if not road_ranges[road_ranges['road'] == row['road']]['min_lon'].empty:
                     if row['lon'] < road_ranges[road_ranges['road'] == row['road']]['min_lon'].iloc[0] or row['lon'] > road_ranges[road_ranges['road'] == row['road']]['max_lon'].iloc[0]:
@@ -44,25 +52,25 @@ def clean_lon_lat_bmms(df, road_ranges):
                                 count += 1
                         if count != 0:
                             avg_lon = next_three_lon / count
-                            if row['lon'] < avg_lon - 1 or row['lon'] > avg_lon + 1:
+                            if row['lon'] < avg_lon - 0.3 or row['lon'] > avg_lon + 0.3:
                                 df.loc[index, 'lon'] = avg_lon
         prev_row = df.loc[index]
     return df
 
-
-def clean_lon_lat_roads(df):
-    prev_row = None
-    for index, row in df.iterrows():
-        if prev_row is not None:
-            if row['road'] == prev_row['road']:
-                if row['lat'] < prev_row['lat'] - 0.5 or row['lat'] > prev_row['lat'] + 0.5:
-                    print(f"on road {row['road']} with the index,name {index} {row['name']} the old latitude was {row['lat']} while previous was {prev_row['lat']}")
-                    df.loc[index, 'lat'] = prev_row['lat']
-                if row['lon'] < prev_row['lon'] - 0.5 or row['lon'] > prev_row['lon'] + 0.5:
-                    print(f"on road {row['road']} with the name {index} {row['name']} the old longitude was {row['lon']} while previous was {prev_row['lon']}")
-                    df.loc[index, 'lon'] = prev_row['lon']
-        prev_row = df.loc[index]
-    return df
+# This code is old and was used for the csv which we dont need to clean
+# def clean_lon_lat_roads(df):
+#     prev_row = None
+#     for index, row in df.iterrows():
+#         if prev_row is not None:
+#             if row['road'] == prev_row['road']:
+#                 if row['lat'] < prev_row['lat'] - 0.5 or row['lat'] > prev_row['lat'] + 0.5:
+#                     print(f"on road {row['road']} with the index,name {index} {row['name']} the old latitude was {row['lat']} while previous was {prev_row['lat']}")
+#                     df.loc[index, 'lat'] = prev_row['lat']
+#                 if row['lon'] < prev_row['lon'] - 0.5 or row['lon'] > prev_row['lon'] + 0.5:
+#                     print(f"on road {row['road']} with the name {index} {row['name']} the old longitude was {row['lon']} while previous was {prev_row['lon']}")
+#                     df.loc[index, 'lon'] = prev_row['lon']
+#         prev_row = df.loc[index]
+#     return df
 
 def lon_lat_errors_tsv(df):
     columns = df.columns
@@ -79,17 +87,17 @@ def lon_lat_errors_tsv(df):
                         df.loc[index, col] = lon
                         df.iloc[index, i+1] = lat
                         index_changes.append((index, i, row[col], lon))
-                    elif row[col] < prev_lat - 0.5 or row[col] > prev_lat+ 0.5:
+                    elif row[col] < prev_lat - 0.1 or row[col] > prev_lat+ 0.1:
                         df.loc[index, col] = prev_lat
                         index_changes.append((index, i, row[col], prev_lat))
                 prev_lat = df.loc[index, col]
             if i % 3 == 0 and i != 0:
                 if prev_lon is not None:
-                    if row[col] < prev_lon - 0.5 or row[col] > prev_lon+ 0.5:
+                    if row[col] < prev_lon - 0.1 or row[col] > prev_lon+ 0.1:
                         df.loc[index, col] = prev_lon
                         index_changes.append((index, i, row[col], prev_lon))
                 prev_lon = df.loc[index, col]
-    print(index_changes)
+    #print(index_changes)
     return df
 
 def restructure_df(df):
