@@ -2,6 +2,9 @@ import pandas as pd
 
 def clean_lon_lat_bmms(df, road_ranges):
     df = df.sort_values(by=['road', 'km'])
+
+    df.loc[df['width'] > 45, df.select_dtypes(include=['number']).columns] = df.loc[df['width'] > 45, df.select_dtypes(include=['number']).columns] / 100
+
     for index, row in df.iterrows():
         if row.lat > 27 or row.lon < 88:
             lat = row.lat
