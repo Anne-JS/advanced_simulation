@@ -175,3 +175,9 @@ def second_restructure(bmms_file_excel, roads_tsv_file):
     df_rds = lon_lat_errors_tsv(df_rds)
     df_rds_restructured = restructure_df(df_rds)
     return bmms, df_rds, df_road_ranges, df_rds_restructured
+
+def make_files(bmms, df_rds):
+    bmms.to_excel('BMMS_overview_new.xlsx', index=False, sheet_name='BMMS_overview')
+    df_rds.to_csv('_roads_new.tsv', sep='\t', index=False)
+
+
