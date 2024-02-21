@@ -31,12 +31,16 @@ def clean_lon_lat_bmms(df, road_ranges):
             if row['road'] == prev_row['road']:
                 # If latitude is more than 0.3 degree from previous bmms on same road
                 # Otherwise it is probably a typo
-                if row['lat'] < prev_row['lat'] - 0.3 or row['lat'] > prev_row['lat'] + 0.3:
-                    df.loc[index, 'lat'] = prev_row['lat']
+                if not road_ranges[road_ranges['road'] == row['road']]['min_lon'].empty:
+                    if row['lat'] < road_ranges[road_ranges['road'] == row['road']]['min_lat'].iloc[0] or row['lat'] > road_ranges[road_ranges['road'] == row['road']]['max_lat'].iloc[0]:
+                        if row['lat'] < prev_row['lat'] - 0.05 or row['lat'] > prev_row['lat'] + 0.05:
+                            df.loc[index, 'lat'] = prev_row['lat']
                 # If longitude is more than 0.3 degree from previous bmms on same road
                 # Otherwise it is probably a typo
-                if row['lon'] < prev_row['lon'] - 0.3 or row['lon'] > prev_row['lon'] + 0.3:
-                    df.loc[index, 'lon'] = prev_row['lon']
+                if not road_ranges[road_ranges['road'] == row['road']]['min_lon'].empty:
+                    if row['lon'] < road_ranges[road_ranges['road'] == row['road']]['min_lon'].iloc[0] or row['lon'] > road_ranges[road_ranges['road'] == row['road']]['max_lon'].iloc[0]:
+                        if row['lon'] < prev_row['lon'] - 0.05 or row['lon'] > prev_row['lon'] + 0.05:
+                            df.loc[index, 'lon'] = prev_row['lon']
 
             # if it is the first bmms on the road
             else:
