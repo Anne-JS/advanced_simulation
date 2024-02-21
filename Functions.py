@@ -83,6 +83,51 @@ def clean_lon_lat_bmms(df, road_ranges):
         prev_row = df.loc[index]
     return df
 
+def find_nonzero_nonnan_on_same_road(series, road_series, index, direction='next'):
+    """
+    Find the next or previous non-zero, non-NaN value in a series for the same road.
+    """
+    step = 1 if direction == 'next' else -1
+    current_road = road_series.iloc[index]
+    i = index + step
+    while 0 <= i < len(series):
+        if road_series.iloc[i] != current_road or (not pd.isna(series.iloc[i]) and series.iloc[i] != 0):
+            break
+        i += step
+    if 0 <= i < len(series) and road_series.iloc[i] == current_road:
+        return series.iloc[i]
+    return None
+
+def interpolate_or_assign_on_same_road(df, lat_col='lat', lon_col='lon', road_col='road'):
+    """
+    interpolate between the previous and next value if an identified value is 0
+    if this doesn't work, it will assign the previous value, otherwise the next value (on the same road)
+    """
+
+    for i in range(1, len(df) - 1):  # Exclude first and last index to avoid out-of-bounds errors
+        #interpolate lat values
+        if pd.isna(df[lat_col].iloc[i]) or df[lat_col].iloc[i] == 0:
+            prev_lat = find_nonzero_nonnan_on_same_road(df[lat_col], df[road_col], i, 'prev')
+            next_lat = find_nonzero_nonnan_on_same_road(df[lat_col], df[road_col], i, 'next')
+            if prev_lat is not None and next_lat is not None:
+                df.at[i, lat_col] = (prev_lat + next_lat) / 2
+            elif prev_lat is not None:
+                df.at[i, lat_col] = prev_lat
+            elif next_lat is not None:  # New condition to use next value if previous is not available
+                df.at[i, lat_col] = next_lat
+
+        #interpolate lon values
+        if pd.isna(df[lon_col].iloc[i]) or df[lon_col].iloc[i] == 0:
+            prev_lon = find_nonzero_nonnan_on_same_road(df[lon_col], df[road_col], i, 'prev')
+            next_lon = find_nonzero_nonnan_on_same_road(df[lon_col], df[road_col], i, 'next')
+            if prev_lon is not None and next_lon is not None:
+                df.at[i, lon_col] = (prev_lon + next_lon) / 2
+            elif prev_lon is not None:
+                df.at[i, lon_col] = prev_lon
+            elif next_lon is not None:  # New condition to use next value if previous is not available
+                df.at[i, lon_col] = next_lon
+
+    return df
 
 def lon_lat_errors_tsv(df):
     index_changes = []
