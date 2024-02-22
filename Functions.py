@@ -2,6 +2,14 @@ import pandas as pd
 
 
 def clean_lon_lat_bmms(df, road_ranges):
+    """
+    Cleaning the BMMS_overview file while using the road_ranges df which is created from the _roads.tsv file. 
+    Cleans:     Interpolates 0's and NaN's values in the lon lat columns
+                Fixes bridges where lon and lat are switched up
+                Fixes Typo's values in the lon lat columns
+
+    """
+    df = interpolate_or_assign_on_same_road(df)
     df = df.sort_values(by=['road', 'km'])
     # Identify rows with NaN or 0 in either 'lat' or 'lon'
     rows_with_invalid_values = df[(df['lat'].isna() | df['lat'] == 0) | (df['lon'].isna() | df['lon'] == 0)]
@@ -31,16 +39,56 @@ def clean_lon_lat_bmms(df, road_ranges):
             if row['road'] == prev_row['road']:
                 # If latitude is more than 0.3 degree from previous bmms on same road
                 # Otherwise it is probably a typo
+                # Check if either value is NaN or 0
+                if pd.notna(row['km']) and pd.notna(prev_row['km']) and row['km'] != 0 and prev_row['km'] != 0:
+                    distance = row['km'] - prev_row['km']
+                    # You can now proceed with using 'distance' for further calculations or conditions
+                else:
+                    # Handle the case where the condition is not met (e.g., set distance to None or skip)
+                    distance = 5
+
                 if not road_ranges[road_ranges['road'] == row['road']]['min_lon'].empty:
                     if row['lat'] < road_ranges[road_ranges['road'] == row['road']]['min_lat'].iloc[0] or row['lat'] > road_ranges[road_ranges['road'] == row['road']]['max_lat'].iloc[0]:
                         if row['lat'] < prev_row['lat'] - 0.05 or row['lat'] > prev_row['lat'] + 0.05:
                             df.loc[index, 'lat'] = prev_row['lat']
+                    elif distance > 40:
+                        if row['lat'] < prev_row['lat'] - 0.45 or row['lat'] > prev_row['lat'] + 0.45:
+                            df.loc[index, 'lat'] = prev_row['lat']
+                    elif distance > 25 and distance < 40:
+                        if row['lat'] < prev_row['lat'] - 0.20 or row['lat'] > prev_row['lat'] + 0.20:
+                            df.loc[index, 'lat'] = prev_row['lat']
+                    elif distance > 10 and distance < 25:
+                        if row['lat'] < prev_row['lat'] - 0.10 or row['lat'] > prev_row['lat'] + 0.10:
+                            df.loc[index, 'lat'] = prev_row['lat']
+                    elif distance > 0 and distance < 10:
+                        if row['lat'] < prev_row['lat'] - 0.05 or row['lat'] > prev_row['lat'] + 0.05:
+                            df.loc[index, 'lat'] = prev_row['lat']
+                else:
+                    if row['lat'] < prev_row['lat'] - 0.45 or row['lat'] > prev_row['lat'] + 0.45:
+                        df.loc[index, 'lat'] = prev_row['lat']
+
                 # If longitude is more than 0.3 degree from previous bmms on same road
                 # Otherwise it is probably a typo
                 if not road_ranges[road_ranges['road'] == row['road']]['min_lon'].empty:
                     if row['lon'] < road_ranges[road_ranges['road'] == row['road']]['min_lon'].iloc[0] or row['lon'] > road_ranges[road_ranges['road'] == row['road']]['max_lon'].iloc[0]:
                         if row['lon'] < prev_row['lon'] - 0.05 or row['lon'] > prev_row['lon'] + 0.05:
                             df.loc[index, 'lon'] = prev_row['lon']
+                    elif distance > 40:
+                        if row['lon'] < prev_row['lon'] - 0.45 or row['lon'] > prev_row['lon'] + 0.45:
+                            df.loc[index, 'lon'] = prev_row['lon']
+                    elif distance > 25 and distance < 40:
+                        if row['lon'] < prev_row['lon'] - 0.20 or row['lon'] > prev_row['lon'] + 0.20:
+                            df.loc[index, 'lon'] = prev_row['lon']
+                    elif distance > 10 and distance < 25:
+                        if row['lon'] < prev_row['lon'] - 0.10 or row['lon'] > prev_row['lon'] + 0.10:
+                            df.loc[index, 'lon'] = prev_row['lon']
+                    elif distance > 0 and distance < 10:
+                        if row['lon'] < prev_row['lon'] - 0.05 or row['lon'] > prev_row['lon'] + 0.05:
+                            df.loc[index, 'lon'] = prev_row['lon']
+                else:
+                    if row['lon'] < prev_row['lon'] - 0.27 or row['lon'] > prev_row['lon'] + 0.27:
+                        df.loc[index, 'lon'] = prev_row['lon']
+
 
             # if it is the first bmms on the road
             else:
@@ -105,7 +153,7 @@ def interpolate_or_assign_on_same_road(df, lat_col='lat', lon_col='lon', road_co
     """
 
     for i in range(1, len(df) - 1):  # Exclude first and last index to avoid out-of-bounds errors
-        #interpolate lat values
+        # interpolate lat values
         if pd.isna(df[lat_col].iloc[i]) or df[lat_col].iloc[i] == 0:
             prev_lat = find_nonzero_nonnan_on_same_road(df[lat_col], df[road_col], i, 'prev')
             next_lat = find_nonzero_nonnan_on_same_road(df[lat_col], df[road_col], i, 'next')
@@ -116,7 +164,7 @@ def interpolate_or_assign_on_same_road(df, lat_col='lat', lon_col='lon', road_co
             elif next_lat is not None:  # New condition to use next value if previous is not available
                 df.at[i, lat_col] = next_lat
 
-        #interpolate lon values
+        # interpolate lon values
         if pd.isna(df[lon_col].iloc[i]) or df[lon_col].iloc[i] == 0:
             prev_lon = find_nonzero_nonnan_on_same_road(df[lon_col], df[road_col], i, 'prev')
             next_lon = find_nonzero_nonnan_on_same_road(df[lon_col], df[road_col], i, 'next')
