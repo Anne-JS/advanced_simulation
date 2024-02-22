@@ -20,7 +20,14 @@ def clean_lon_lat_bmms(df, road_ranges):
     # Drop the rows from the original DataFrame
     df = df.loc[~((df['lat'].isna() | df['lat'] == 0) | (df['lon'].isna() | df['lon'] == 0))].reset_index(drop=True)
 
-    df.loc[df['width'] > 45, df.select_dtypes(include=['number']).columns] = df.loc[df['width'] > 45,  df.select_dtypes(include=['number']).columns] / 100
+    # Select numeric columns (you may also consider selecting only int64 columns if you want to be more specific)
+    numeric_columns = df.select_dtypes(include=['number']).columns
+
+    # Convert these columns to float explicitly
+    df[numeric_columns] = df[numeric_columns].astype(float)
+
+    # Now perform your operation
+    df.loc[df['width'] > 45, numeric_columns] = df.loc[df['width'] > 45, numeric_columns] / 100
 
     for index, row in df.iterrows():
         # max and min lon/lat for Bangladesh
@@ -216,9 +223,9 @@ def restructure_df(df):
         for i in range(1, len(df.columns), 3):
             try:
                 # identify lsrp, lat and lon
-                lsrp = row[i]
-                lat = row[i + 1]
-                lon = row[i + 2]
+                lsrp = row.iloc[i]
+                lat = row.iloc[i + 1]
+                lon = row.iloc[i + 2]
                 # add the data to the list
                 if pd.notnull(lsrp):
                     restructured_data.append([road_name, lsrp, lat, lon])
@@ -258,12 +265,22 @@ def road_range_lon_lat(df):
 
 
 def clean(bmms_file_excel, roads_tsv_file):
+    print('Creating BMMS Dataframe')
     bmms = pd.read_excel(bmms_file_excel)
+    print('Creating BMMS Dataframe DONE')
+    print('Creating df_rds Dataframe')
     df_rds = pd.read_csv(roads_tsv_file, delimiter='\t', low_memory=False)
+    print('Creating df_rds Dataframe DONE')
+    print('Cleaning df_rds Dataframe')
     df_rds = lon_lat_errors_tsv(df_rds)
+    print('Cleaning df_rds Dataframe DONE')
+    print('Creating road ranges Dataframe')
     df_rds_restructured = restructure_df(df_rds)
     df_road_ranges = road_range_lon_lat(df_rds_restructured)
+    print('Creating road ranges Dataframe DONE')
+    print('Cleaning BMMS Dataframe')
     bmms = clean_lon_lat_bmms(bmms, df_road_ranges)
+    print('Cleaning BMMS Dataframe DONE')
     return bmms, df_rds, df_road_ranges, df_rds_restructured
 
 
@@ -285,6 +302,8 @@ def second_restructure(bmms_file_excel, roads_tsv_file):
 
 
 def make_files(bmms, df_rds):
+    print("Creating new BMMS and _roads files")
     bmms.to_excel('BMMS_overview_new.xlsx', index=False, sheet_name='BMMS_overview')
     df_rds.to_csv('_roads_new.tsv', sep='\t', index=False)
+    print("Creating new BMMS and _roads files DONE")
     return bmms, df_rds
