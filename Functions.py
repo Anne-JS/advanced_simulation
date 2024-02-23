@@ -37,9 +37,11 @@ def clean_lon_lat_bmms(df, road_ranges):
             lon = row.lon
             df.loc[index, 'lat'] = lon
             df.loc[index, 'lon'] = lat
-
+    roads_missing = set()
     prev_row = None
     for index, row in df.iterrows():
+        if row.road not in road_ranges['road'].values:
+            roads_missing.add(row.road)
         # If it's not the first item of the Excel
         if prev_row is not None:
             # If it's not the first bmms of the road
@@ -136,6 +138,7 @@ def clean_lon_lat_bmms(df, road_ranges):
 
         # set previous values
         prev_row = df.loc[index]
+    print(roads_missing)
     return df
 
 def find_nonzero_nonnan_on_same_road(series, road_series, index, direction='next'):
