@@ -266,7 +266,10 @@ class Vehicle(Agent):
         """
 
         self.location_index += 1
+
+
         next_id = self.path_ids[self.location_index]
+
         next_infra = self.model.schedule._agents[next_id]  # Access to protected member _agents
 
         if isinstance(next_infra, Sink):

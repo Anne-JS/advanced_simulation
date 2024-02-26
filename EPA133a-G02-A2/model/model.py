@@ -73,7 +73,7 @@ class BangladeshModel(Model):
         Warning: the labels are the same as the csv column labels
         """
 
-        df = pd.read_csv('../data/demo-1.csv')
+        df = pd.read_csv('../data/n1_model.csv')
 
         # a list of names of roads to be generated
         roads = ['N1']
@@ -86,18 +86,21 @@ class BangladeshModel(Model):
         df_objects_all = []
         for road in roads:
 
+
             # be careful with the sorting
             # better remove sorting by id
             # Select all the objects on a particular road
-            df_objects_on_road = df[df['road'] == road].sort_values(by=['id'])
+            df_objects_on_road = df[df['road'] == road]
 
             if not df_objects_on_road.empty:
                 df_objects_all.append(df_objects_on_road)
 
                 # the object IDs on a given road
                 path_ids = df_objects_on_road['id']
+
                 # add the path to the path_ids_dict
                 self.path_ids_dict[path_ids[0], path_ids.iloc[-1]] = path_ids
+
                 # put the path in reversed order and reindex
                 path_ids = path_ids[::-1]
                 path_ids.reset_index(inplace=True, drop=True)
