@@ -55,16 +55,19 @@ class BangladeshModel(Model):
 
     step_time = 1
 
-    def __init__(self, seed=None, x_max=500, y_max=500, x_min=0, y_min=0):
-
+    def __init__(self, scenario_probabilities, seed=None, x_max=500, y_max=500, x_min=0, y_min=0):
         self.schedule = BaseScheduler(self)
         self.running = True
         self.path_ids_dict = defaultdict(lambda: pd.Series())
         self.space = None
         self.sources = []
         self.sinks = []
-
+        self.scenario_probabilities = scenario_probabilities
         self.generate_model()
+
+
+    def get_scenario_probabilities(self):
+        return self.scenario_probabilities
 
     def generate_model(self):
         """
@@ -73,7 +76,7 @@ class BangladeshModel(Model):
         Warning: the labels are the same as the csv column labels
         """
 
-        df = pd.read_csv('../data/n1_model.csv')
+        df = pd.read_csv('../data/demo-1.csv')
 
         # a list of names of roads to be generated
         roads = ['N1']
