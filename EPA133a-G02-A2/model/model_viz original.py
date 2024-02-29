@@ -3,7 +3,6 @@ from ContinuousSpace.SimpleContinuousModule import SimpleCanvas
 from model import BangladeshModel
 from components import Source, Sink, Bridge, Link
 
-
 """
 Run simulation with Visualization 
 Print output at terminal
@@ -72,8 +71,7 @@ space = SimpleCanvas(agent_portrayal, canvas_width, canvas_height)
 server = ModularServer(BangladeshModel,
                        [space],
                        "Transport Model Demo",
-                       {"scenario_probabilities": {"A": 5, "B": 10, "C": 20, "D": 40},
-                       "seed": 1234567})
+                       {"seed": 1234567})
 
 # The default port
 server.port = 8521
