@@ -53,7 +53,6 @@ class Bridge(Infra):
     def __init__(self, unique_id, model, length=0,
                  name='Unknown', road_name='Unknown', condition='Unknown'):
         super().__init__(unique_id, model, length, name, road_name)
-
         self.condition = condition
         self.breaks_down = self.determine_breakdown_chance()
         self.delay_time = self.calculate_delay_time() if self.breaks_down else 0
@@ -63,7 +62,9 @@ class Bridge(Infra):
 
     def determine_breakdown_chance(self):
         #calculate if bridge is broken down based on the chances as input in the model initialisation
-        breakdown_probability = self.model.scenario_probabilities.get(self.condition, 0)
+        print(self.condition)
+        breakdown_probability = self.model.scenario_probabilities.get(self.condition)
+        print('breakdown probability: ', breakdown_probability)
         return random.uniform(0, 100) < breakdown_probability
 
     def calculate_delay_time(self):
