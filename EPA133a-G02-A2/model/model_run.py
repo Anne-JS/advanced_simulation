@@ -1,3 +1,5 @@
+import pandas as pd
+
 from model import BangladeshModel
 
 """
@@ -28,3 +30,17 @@ model_Julian = BangladeshModel(scenario_probabilities=probs_1)
 # # One run with given steps
 for i in range(run_length):
     model_Julian.step()
+
+bridges_data = []  # Use a different name to avoid confusion with the 'bridges' variable inside the loop
+for bridge in model_Julian.bridges:
+    # Append a dictionary for each bridge to the list
+    bridges_data.append({
+        'unique_id': bridge.unique_id,
+        'delay_time': bridge.delay_time,
+        'breaks_down': bridge.breaks_down
+    })
+
+# Directly create a DataFrame from the list of dictionaries
+df_bridge = pd.DataFrame(bridges_data, columns=['unique_id', 'delay_time', 'breaks_down'])
+for index, row in df_bridge.iterrows():
+    print(row)

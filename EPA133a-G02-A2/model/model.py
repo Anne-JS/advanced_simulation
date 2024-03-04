@@ -62,6 +62,7 @@ class BangladeshModel(Model):
         self.space = None
         self.sources = []
         self.sinks = []
+        self.bridges = []
         self.scenario_probabilities = scenario_probabilities
         self.generate_model()
 
@@ -144,6 +145,7 @@ class BangladeshModel(Model):
                     self.sinks.append(agent.unique_id)
                 elif model_type == 'bridge':
                     agent = Bridge(row['id'], self, row['length'], row['name'], row['road'], condition=row['condition'])
+                    self.bridges.append(agent)
                 elif model_type == 'link':
                     agent = Link(row['id'], self, row['length'], row['name'], row['road'])
 
