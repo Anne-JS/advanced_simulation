@@ -13,9 +13,9 @@ Created by: EPA133a Group 02
 
 ## Introduction
 
-This is Assigment 2 for the TU Delft course EPA133A Advanced Simulation. The goal of the assigment is understanding which infrastructure is critical in Bangladesh. We aim to understand which bridges must be prioritized to improve, in order to limit the disruptions during a natural disaster.
+This is Assigment 2 for the TU Delft course EPA133A Advanced Simulation. The goal of the assigment is understanding which infrastructure is critical in Bangladesh. The country is prone to natural disasters, such as floods and cyclones. Here, we investigate which bridges must be prioritized to improve, in order to limit the disruptions during a natural disaster.
 
-In this assigment we set up the components for an agent based model making use of the library MESA. Here, we will simplify the road infrastructure of Bangladesh by modeling only one part of the N1 road, including their corresponding bridges.
+In this assigment we set up the components for an agent based model making use of the library MESA. The simplified model simulates the road infrastructure of Bangladesh by modeling only one part of the N1 road, including their corresponding bridges.
 
 The model runs a scenario in which a natural disaster occurs and the bridges are damaged. One can define the change a bridge falls down depending on the condition of the bridge. The model will simulate the vehicles driving on the road and the impact of the damaged bridges on the travel time.
 
