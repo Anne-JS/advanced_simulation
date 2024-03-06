@@ -62,9 +62,9 @@ class Bridge(Infra):
 
     def determine_breakdown_chance(self):
         #calculate if bridge is broken down based on the chances as input in the model initialisation
-        print(self.condition)
+        # print(self.condition)
         breakdown_probability = self.model.scenario_probabilities.get(self.condition)
-        print('breakdown probability: ', breakdown_probability)
+        # print('breakdown probability: ', breakdown_probability)
         return random.uniform(0, 100) < breakdown_probability
 
     def calculate_delay_time(self):
