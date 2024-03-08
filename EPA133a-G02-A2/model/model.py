@@ -3,6 +3,8 @@ from mesa.time import BaseScheduler
 from mesa.space import ContinuousSpace
 from components import Source, Sink, SourceSink, Bridge, Link
 import pandas as pd
+import numpy as np
+import random
 from collections import defaultdict
 
 
@@ -56,6 +58,11 @@ class BangladeshModel(Model):
     step_time = 1
 
     def __init__(self, scenario_probabilities, seed=None, x_max=500, y_max=500, x_min=0, y_min=0):
+        self.seed = seed  # Store the seed
+
+        if seed is not None:
+            self.random.seed(seed)
+
         self.schedule = BaseScheduler(self)
         self.running = True
         self.path_ids_dict = defaultdict(lambda: pd.Series())
@@ -65,7 +72,6 @@ class BangladeshModel(Model):
         self.bridges = []
         self.scenario_probabilities = scenario_probabilities
         self.generate_model()
-
 
     def get_scenario_probabilities(self):
         return self.scenario_probabilities
